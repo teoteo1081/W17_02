@@ -18,11 +18,11 @@ Bảo vệ endpoint ghi file (F10):
 import hmac
 import json
 import os
-import re
 import secrets
 import tempfile
 import threading
 import time
+from html.parser import HTMLParser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -32,18 +32,20 @@ BACKUP_DIR_NAME = ".w17_backups"
 BACKUP_KEEP = 5
 MAX_BODY_BYTES = 12 * 1024 * 1024  # file Final ~0.3MB; chừa chỗ cho ảnh đại diện base64
 
-# filename -> các thành phần BẮT BUỘC phải có trong một trang hợp lệ (không chỉ một marker đơn lẻ)
-# và kích thước tối thiểu; bản ghi quá nhỏ so với file hiện có cũng bị từ chối (chống cắt cụt / ghi đè bằng rác).
+# filename -> {id: thẻ} các phần tử BẮT BUỘC phải tồn tại trong CÂY HTML đã parse (comment/chuỗi trong script không được tính),
+# mỗi id đúng một lần; cùng kích thước tối thiểu. Bản ghi quá nhỏ so với file hiện có cũng bị từ chối.
 ALLOWED_FILES = {
-    "index.html": (
-        'id="main-navbar"', 'id="ga4-ecosystem"', 'id="pbi-ga4-dashboard"', 'id="core-portfolio-script"',
-        'id="visual-editor-script"', 'id="w17-baked-edits"', 'id="ga4-drilldown-modal"',
-    ),
-    "index_portfolio_clean.html": (
-        'id="portfolio-root"', 'id="reorderable-sections"', 'id="interactive-editor-script"', 'id="w17-baked-edits"',
-        'id="solutions-grid"', 'id="education-grid"',
-    ),
+    "index.html": {
+        "main-navbar": "header", "ga4-ecosystem": "section", "pbi-ga4-dashboard": "div", "core-portfolio-script": "script",
+        "visual-editor-script": "script", "w17-baked-edits": "script", "ga4-drilldown-modal": "div",
+    },
+    "index_portfolio_clean.html": {
+        "portfolio-root": "main", "reorderable-sections": "div", "interactive-editor-script": "script",
+        "w17-baked-edits": "script", "solutions-grid": "div", "education-grid": "div",
+    },
 }
+MIN_SCRIPT_CHARS = 20000   # tổng độ dài các <script> thực thi (không tính JSON nhúng)
+MIN_ELEMENTS = 300         # số phần tử thật trong cây HTML
 MIN_HTML_BYTES = 100 * 1024
 MIN_RATIO_OF_CURRENT = 0.5
 
@@ -72,6 +74,53 @@ class SaveError(Exception):
         self.message = message
 
 
+class _PageProbe(HTMLParser):
+    """Dựng bản tóm tắt cây HTML thật: comment và nội dung trong <script>/<style> không bao giờ được tính là phần tử."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.elements = 0
+        self.ids = {}            # id -> [tag, ...]
+        self.html_tags = 0
+        self.body_tags = 0
+        self.editor_attrs = []   # contenteditable / toolbar / is-editing
+        self.script_chars = 0
+        self.baked_json = []
+        self._cur_script = None
+
+    def handle_starttag(self, tag, attrs):
+        self.elements += 1
+        a = dict(attrs)
+        if tag == "html":
+            self.html_tags += 1
+        if tag == "body":
+            self.body_tags += 1
+            if "is-editing" in (a.get("class") or "").split():
+                self.editor_attrs.append("body.is-editing")
+        if "contenteditable" in a:
+            self.editor_attrs.append(f"{tag}[contenteditable]")
+        if a.get("id"):
+            self.ids.setdefault(a["id"], []).append(tag)
+            if a["id"] in ("visual-toolbar", "floating-toolbar"):
+                self.editor_attrs.append("#" + a["id"])
+        if tag == "script":
+            self._cur_script = {"id": a.get("id"), "type": (a.get("type") or "").lower(), "chars": 0, "data": []}
+
+    def handle_data(self, data):
+        if self._cur_script is not None:
+            self._cur_script["chars"] += len(data)
+            self._cur_script["data"].append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "script" and self._cur_script is not None:
+            s = self._cur_script
+            if s["type"] == "application/json":
+                self.baked_json.append((s["id"], "".join(s["data"])))
+            else:
+                self.script_chars += s["chars"]
+            self._cur_script = None
+
+
 def validate_html(filename, html):
     if not isinstance(html, str) or not html.strip():
         raise SaveError(400, "Nội dung HTML rỗng hoặc không phải chuỗi.")
@@ -80,12 +129,35 @@ def validate_html(filename, html):
         raise SaveError(422, "Nội dung không bắt đầu bằng <!DOCTYPE html> hoặc <html>.")
     if "</html>" not in html[-400:].lower():
         raise SaveError(422, "Nội dung HTML không kết thúc bằng </html> (có thể bị cắt cụt).")
-    static_html = re.sub(r"<script[\s>].*?</script>", "", html, flags=re.S | re.I)
-    if static_html.lower().count("<html") != 1 or static_html.lower().count("<body") != 1:
+    probe = _PageProbe()
+    try:
+        probe.feed(html)
+        probe.close()
+    except Exception:
+        raise SaveError(422, "Không parse được HTML.")
+    if probe.html_tags != 1 or probe.body_tags != 1:
         raise SaveError(422, "HTML phải có đúng một thẻ <html> và một thẻ <body>.")
-    missing = [m for m in ALLOWED_FILES[filename] if m not in html]
-    if missing:
-        raise SaveError(422, f"HTML không phải bản đầy đủ của {filename} (thiếu {', '.join(missing)}).")
+    problems = []
+    for rid, tag in ALLOWED_FILES[filename].items():
+        found = probe.ids.get(rid, [])
+        if found != [tag]:
+            problems.append(f"{rid} (cần đúng 1 <{tag}>, tìm thấy {found or 'không có'})")
+    if problems:
+        raise SaveError(422, f"HTML không phải bản đầy đủ của {filename}: " + "; ".join(problems))
+    if probe.elements < MIN_ELEMENTS:
+        raise SaveError(422, f"HTML chỉ có {probe.elements} phần tử (< {MIN_ELEMENTS}); không phải trang đầy đủ.")
+    if probe.script_chars < MIN_SCRIPT_CHARS:
+        raise SaveError(422, f"Mã script quá ít ({probe.script_chars} ký tự < {MIN_SCRIPT_CHARS}); không phải trang đầy đủ.")
+    for sid, data in probe.baked_json:
+        if sid == "w17-baked-edits":
+            try:
+                parsed = json.loads(data or "null")
+            except json.JSONDecodeError:
+                raise SaveError(422, "Khối w17-baked-edits không phải JSON hợp lệ.")
+            if not isinstance(parsed, dict):
+                raise SaveError(422, "Khối w17-baked-edits phải là object JSON.")
+    if probe.editor_attrs:
+        raise SaveError(422, "Bản Final còn trạng thái editor (" + ", ".join(sorted(set(probe.editor_attrs))) + "); từ chối ghi.")
     size = len(html.encode("utf-8"))
     current = BASE_DIR / filename
     floor = MIN_HTML_BYTES
@@ -93,8 +165,6 @@ def validate_html(filename, html):
         floor = max(floor, int(current.stat().st_size * MIN_RATIO_OF_CURRENT))
     if size < floor:
         raise SaveError(422, f"HTML quá nhỏ ({size} byte < {floor}); có thể bị cắt cụt hoặc không phải trang đầy đủ.")
-    if re.search(r"""id=["'](?:visual|floating)-toolbar["']|\scontenteditable\s*=""", static_html):
-        raise SaveError(422, "Bản Final còn thanh công cụ editor hoặc contenteditable trong HTML tĩnh; từ chối ghi.")
 
 
 def backup_existing(target):

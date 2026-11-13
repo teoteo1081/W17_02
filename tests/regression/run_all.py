@@ -28,6 +28,8 @@ from playwright.sync_api import sync_playwright
 
 import extra_cases as X  # noqa: E402
 X.R = sys.modules[__name__]
+import extra_cases_r3 as X3  # noqa: E402
+X3.R = sys.modules[__name__]
 
 REPO = Path(__file__).resolve().parents[2]
 LOCALES = ["vi", "en", "es", "zh"]
@@ -687,11 +689,12 @@ def t_f07(b, env):
                 order_edit = None
             pg.wait_for_timeout(200)
             creator_cache_before = pg.evaluate("() => Object.fromEntries(Object.entries(localStorage))")
+            mtime_before = (env.work / out_rel).stat().st_mtime_ns
             click_save(pg)
             written = (env.work / out_rel).read_text(encoding="utf-8")
-            toast = pg.evaluate("document.getElementById('toast-notification').textContent")
-            if "ghi đè" not in toast and "Đã ghi" not in toast:
-                bad.append(f"{scenario}/{src_rel}: toast không báo ghi thành công: {toast!r}")
+            # Kiểm theo TRẠNG THÁI thật (file đã đổi trên đĩa, có bản sao lưu), không dò chữ trong toast (toast theo locale)
+            if (env.work / out_rel).stat().st_mtime_ns == mtime_before or not list((env.work / ".w17_backups").glob(out_rel + ".*.bak")):
+                bad.append(f"{scenario}/{src_rel}: file không được ghi/không có backup sau khi bấm Lưu")
             if (env.work / out_rel).stat().st_size < 50000:
                 bad.append(f"{scenario}/{src_rel}: file ghi ra quá nhỏ")
             marker = "ROUNDTRIP footer EN edit" if is_cv else "ROUNDTRIP badge EN edit"
@@ -820,7 +823,7 @@ TOOLBAR_JS = r"""
     out.push({text: (el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 28), left: Math.round(r.left), right: Math.round(r.right), w: Math.round(r.width), h: Math.round(r.height),
               clipped: r.left < -0.5 || r.right > vw + 0.5, covered: !(hit && (el === hit || el.contains(hit)))});
   });
-  const save = [...t.querySelectorAll('button')].find((b) => /Lưu file sạch/.test(b.textContent));
+  const save = t.querySelector('#btn-save-final');
   return {items: out, hasSave: !!save, scrollW: document.documentElement.scrollWidth, vw};
 }
 """
@@ -859,13 +862,12 @@ def t_f09(b, env, quick, shots):
                 pg2 = new_page(ctx2)
                 open_page(pg2, env, rel)
                 try:
-                    click_save(pg2, 900)
                     out = FINAL_CV if rel == CREATOR_CV else FINAL_PORTFOLIO
-                    if (env.work / out).read_text(encoding="utf-8") == (env.pristine / out).read_text(encoding="utf-8"):
-                        pass  # nội dung có thể giống bản gốc; trạng thái ghi được kiểm bằng toast
-                    toast = pg2.evaluate("document.getElementById('toast-notification').textContent")
-                    if "ghi đè" not in toast:
-                        bad.append(f"{rel}@{w}: bấm Lưu bằng chuột nhưng không ghi được ({toast!r})")
+                    mtime_before = (env.work / out).stat().st_mtime_ns
+                    click_save(pg2, 900)
+                    # trạng thái thật: file trên đĩa đã đổi và có bản sao lưu (không dò chữ trong toast theo locale)
+                    if (env.work / out).stat().st_mtime_ns == mtime_before or not list((env.work / ".w17_backups").glob(out + ".*.bak")):
+                        bad.append(f"{rel}@{w}: bấm Lưu bằng chuột nhưng file không được ghi/không có backup")
                 except Exception as exc:  # noqa
                     bad.append(f"{rel}@{w}: không bấm được nút Lưu ({exc})")
                 ctx2.close()
@@ -1009,36 +1011,55 @@ def t_f10(env):
 
 
 # ======================================================================= static content / overflow / nav
+BADGES = {
+    "vi": ["Cốt lõi • Trọn gói", "Cốt lõi • Dữ liệu & BI", "Hỗ trợ kỹ thuật • Beta", "MarOps • Không cam kết KPI"],
+    "en": ["Core • End-to-End", "Core • Data & BI", "Tech Support • Beta", "MarOps • No KPI Commit"],
+    "es": ["Núcleo • Integral", "Núcleo • Datos y BI", "Soporte técnico • Beta", "MarOps • Sin compromiso de KPI"],
+    "zh": ["核心 • 全流程", "核心 • 数据与 BI", "技术支持 • Beta", "MarOps • 不承诺 KPI"],
+}
+SERVICE_TITLES = {
+    "vi": ["1. Vận hành Trọn gói", "2. Phân tích Dữ liệu & Dashboard BI", "3. Website & Trang đích", "4. Theo dõi Hiệu suất"],
+    "en": ["1. End-to-End Operational", "2. Data Analyst & BI Dashboard", "3. Website & Landing Page", "4. Tracking Performance"],
+    "es": ["1. Operaciones Integrales", "2. Análisis de Datos y Dashboard BI", "3. Sitio Web y Página de Aterrizaje", "4. Seguimiento del Rendimiento"],
+    "zh": ["1. 端到端运营托管", "2. 数据分析与 BI 看板", "3. 网站与落地页", "4. 效果追踪"],
+}
+POSITIONING = {"vi": "Vận hành & Phân tích Dữ liệu", "en": "Operations & Data Analyst", "es": "Operaciones y Datos", "zh": "运营与数据分析师"}
+
+
 def t_content(b, env):
+    """Nội dung bắt buộc, kiểm theo DICTIONARY của từng locale (không còn ép giữ tiếng Anh ở mọi locale)."""
     bad = []
     ctx = b.new_context(viewport={"width": 1280, "height": 900})
     pg = new_page(ctx)
-    badges = ["Core • End-to-End", "Core • Data & BI", "Tech Support • Beta", "MarOps • No KPI Commit"]
     for rel in (FINAL_PORTFOLIO, CREATOR_PORTFOLIO):
         open_page(pg, env, rel)
         for l in LOCALES:
             set_lang(pg, l)
             info = pg.evaluate("""() => ({
-              badges: [...document.querySelectorAll('#ga4-ecosystem span.font-mono')].map((e) => e.textContent.trim()),
+              badges: [...document.querySelectorAll('#ga4-ecosystem [data-i18n^=eco_badge_]')].map((e) => e.textContent.trim()),
+              titles: [1, 2, 3, 4].map((i) => document.querySelector('[data-i18n=eco_card' + i + '_title]').textContent.trim()),
               cards: document.querySelectorAll('#ga4-ecosystem div[onclick*="is-editing"][onclick*="openGA4DrilldownModal"]').length,
               pbi: !!document.getElementById('pbi-ga4-dashboard'),
               apps: ['WRP Tax Services', 'Operation 0', 'TJ WordLoop', 'TJ Courses Hub'].map((n) => document.body.innerText.includes(n)),
-              pos: document.body.innerText.includes('Operations & Data Analyst'),
+              pos: document.querySelector('[data-i18n=hero_positioning]').textContent,
               nocommit: document.querySelector('[data-i18n=eco_card4_desc]').textContent.includes(({vi: 'không cam kết doanh thu/lead', en: 'no revenue/lead KPI commitments', es: 'sin compromiso de ingresos/leads', zh: '不承诺获客或营收 KPI'})[document.documentElement.lang]),
               pkgs: document.querySelectorAll('#modal-service-packages [data-service-pkg]').length })""")
-            for bd in badges:
-                if bd not in info["badges"]:
-                    bad.append(f"{rel}/{l}: thiếu badge {bd}")
-            if info["cards"] != 4 or not info["pbi"] or not all(info["apps"]) or not info["pos"] or info["pkgs"] != 4 or not info["nocommit"]:
+            if info["badges"] != BADGES[l]:
+                bad.append(f"{rel}/{l}: badge {info['badges']}")
+            if info["titles"] != SERVICE_TITLES[l]:
+                bad.append(f"{rel}/{l}: tên dịch vụ {info['titles']}")
+            if POSITIONING[l] not in info["pos"]:
+                bad.append(f"{rel}/{l}: sai định vị {info['pos']!r}")
+            if info["cards"] != 4 or not info["pbi"] or not all(info["apps"]) or info["pkgs"] != 4 or not info["nocommit"]:
                 bad.append(f"{rel}/{l}: {info}")
     for rel in (FINAL_CV, CREATOR_CV):
         open_page(pg, env, rel)
         for l in LOCALES:
             set_lang(pg, l)
-            t = pg.evaluate("[document.querySelector('[data-i18n=hero_title]').textContent, document.querySelector('[data-i18n=hero_bio]').textContent]")
-            if "Operations & Data Analyst" not in t[0] or "Data Analyst" not in t[0]:
-                bad.append(f"{rel}/{l}: sai định vị {t[0]!r}")
-    record("CONTENT", "giữ định vị Operations & Data Analyst, đúng 4 dịch vụ + badge, không cam kết KPI, khối Power BI, bốn ứng dụng Proof of Work (Final+Creator, 4 locale)", not bad, " | ".join(bad[:6]))
+            t = pg.evaluate("document.querySelector('[data-i18n=hero_title]').textContent")
+            if POSITIONING[l] not in t:
+                bad.append(f"{rel}/{l}: sai định vị {t!r}")
+    record("CONTENT", "giữ định vị Operations & Data Analyst (đã dịch theo từng locale), đúng 4 dịch vụ + badge theo dictionary, không cam kết KPI, khối Power BI Telemetry, bốn ứng dụng Proof of Work (Final+Creator, 4 locale)", not bad, " | ".join(bad[:6]))
     ctx.close()
 
 
@@ -1141,6 +1162,7 @@ def main():
                 ("F07", lambda: (t_f07(b, env), t_f07_dom_scan(b, env))),
                 ("F10", lambda: t_f10(env)),
                 ("N", lambda: (X.t_n01_migration_cards(b, env), X.t_n02_duplicate_keys(b, env), X.t_n03_node_identity(b, env), X.t_n04_brand(b, env), X.t_server_extra(env))),
+                ("R3", lambda: (X3.t_i18n_purity(b, env), X3.t_static_equals_vi(b, env), X3.t_ui_locale(b, env), X3.t_aria_meta(b, env), X3.t_n07_comment(env))),
                 ("CONTENT", lambda: t_content(b, env)),
                 ("NAV", lambda: t_nav(b, env)),
                 ("RESP", lambda: t_overflow(b, env, args.quick)),
