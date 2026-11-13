@@ -54,7 +54,8 @@ Sau đó mở trình duyệt tại địa chỉ:
 
 ### Bảo vệ endpoint lưu file (`/api/save`)
 - Server chỉ bind `127.0.0.1`, **không bật CORS**; trang trong editor tự lấy token phiên ngẫu nhiên qua `GET /api/session` (chỉ trả cho đúng origin của dev server) rồi gửi kèm header `X-W17-Token`.
-- Chỉ ghi `index.html` và `index_portfolio_clean.html`, body tối đa 12MB, HTML phải đúng cấu trúc và không còn trạng thái editor; ghi nguyên tử và tự sao lưu bản cũ vào `.w17_backups/` (giữ 5 bản, đã `.gitignore`).
+- Chỉ ghi `index.html` và `index_portfolio_clean.html`, body tối đa 12MB, HTML phải đủ các thành phần đặc trưng của trang, đủ kích thước và không còn trạng thái editor; ghi nguyên tử, tuần tự hóa các lần ghi đồng thời và tự sao lưu bản cũ vào `.w17_backups/` (giữ 5 bản, đã `.gitignore`).
+- Chỉ phục vụ file tĩnh có đuôi trong allowlist; đường dẫn được kiểm sau khi giải mã percent-encoding; không liệt kê thư mục, không phục vụ `*.py` hay thư mục ẩn.
 - Mở file bằng `file://` vẫn tải được file sạch về máy nhưng **không** ghi trực tiếp vào dự án; hãy dùng `python dev_server.py`.
 
 ### Creator ↔ Final (một nguồn duy nhất)

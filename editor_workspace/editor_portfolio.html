@@ -2319,28 +2319,63 @@
       return clone.textContent || '';
     }
 
-    // ---- Node không có data-i18n (thương hiệu, nhãn, bản quyền...): lưu theo { chỉ số: { from: văn bản gốc, to: văn bản mới } }.
-    // Chỉ áp lại khi văn bản hiện tại đúng bằng "from" nên không bao giờ ghi nhầm vào node khác sau khi cấu trúc trang đổi.
+    // ---- Node không có data-i18n (nhãn, bản quyền...): lưu theo { id ổn định: { from: văn bản gốc, to: văn bản mới } } ----
+    // Mỗi node nhận một data-node-id ổn định (gán một lần trên DOM tĩnh, được giữ trong file Final khi xuất), nên
+    // chỉnh sửa luôn đi theo ĐÚNG node dù thẻ bị kéo đổi chỗ hay nhiều node có cùng văn bản (vd. dấu ✓).
+    // Chỉ áp lại khi văn bản hiện tại đúng bằng "from".
     const W17_NODE_SELECTOR = 'h1, h2, h3, h4, p, span:not(.lucide):not(.no-edit), header a, footer a, .editable-node';
     const W17_NODE_EXCLUDE = '[data-i18n], #visual-toolbar, #ga4-drilldown-modal, #dashboard, #pbi-ga4-dashboard, button, select, script, style, svg, #toast-notification, .no-edit';
     let w17NodeIndex = [];
 
     function w17IndexEditableNodes() {
       w17NodeIndex = [];
+      const nodes = [];
       document.querySelectorAll(W17_NODE_SELECTOR).forEach((el) => {
         if (el.closest(W17_NODE_EXCLUDE) || el.children.length) return;
-        const text = el.textContent || '';
-        if (!text.trim()) return;
-        w17NodeIndex.push({ el, orig: text });
+        if (!(el.textContent || '').trim()) return;
+        nodes.push(el);
+      });
+      const seen = new Set();
+      let next = 0;
+      nodes.forEach((el) => {
+        const raw = el.getAttribute('data-node-id');
+        if (raw !== null && /^\d+$/.test(raw)) next = Math.max(next, Number(raw) + 1);
+      });
+      nodes.forEach((el) => {
+        let id = el.getAttribute('data-node-id');
+        if (id === null || !/^\d+$/.test(id) || seen.has(id)) {
+          id = String(next++);
+          el.setAttribute('data-node-id', id);
+        }
+        seen.add(id);
+        w17NodeIndex.push({ id, el, orig: el.textContent || '' });
       });
     }
 
     function w17ApplyNodeEdits(map) {
       if (!map || typeof map !== 'object') return;
-      Object.keys(map).forEach((idx) => {
-        const entry = w17NodeIndex[Number(idx)];
-        const e = map[idx];
+      Object.keys(map).forEach((id) => {
+        const entry = w17NodeIndex.find((x) => x.id === String(id));
+        const e = map[id];
         if (!entry || !e || typeof e.from !== 'string' || typeof e.to !== 'string' || e.to.length > 2000) return;
+        if (entry.orig === e.from) entry.el.textContent = e.to;
+      });
+    }
+
+    // ---- Nhãn (brand) trên thanh công cụ Creator: node lá .brand-title, lưu theo vị trí trong toolbar ----
+    let w17BrandIndex = [];
+
+    function w17IndexBrandNodes() {
+      const tb = document.getElementById('visual-toolbar');
+      w17BrandIndex = tb ? Array.from(tb.querySelectorAll('.brand-title')).filter((el) => !el.children.length).map((el) => ({ el, orig: el.textContent || '' })) : [];
+    }
+
+    function w17ApplyBrandEdits(map) {
+      if (!map || typeof map !== 'object') return;
+      Object.keys(map).forEach((i) => {
+        const entry = w17BrandIndex[Number(i)];
+        const e = map[i];
+        if (!entry || !e || typeof e.from !== 'string' || typeof e.to !== 'string' || e.to.length > 500) return;
         if (entry.orig === e.from) entry.el.textContent = e.to;
       });
     }
@@ -3260,7 +3295,9 @@
     let isVisualEditing = false;
 
     // Lưu chỉnh sửa theo schema: chỉ ghi những khóa i18n thật sự khác bản dịch gốc, theo ngôn ngữ đang hiển thị.
-    function persistStructuredEdits() {
+    // Nhiều node có thể dùng chung một khóa (vd. menu desktop và mobile): gộp theo khóa, ưu tiên node người dùng vừa gõ
+    // (sourceEl) hoặc node đầu tiên khác bản gốc — một node chưa sửa không được xóa chỉnh sửa của node kia.
+    function persistStructuredEdits(sourceEl) {
       try {
         const state = w17ReadCachedEdits() || {};
         if (!state.editsByLang || typeof state.editsByLang !== 'object') state.editsByLang = {};
@@ -3269,25 +3306,54 @@
         if (!state.editsByLang[activeLang] || typeof state.editsByLang[activeLang] !== 'object') {
           state.editsByLang[activeLang] = {};
         }
+        const byKey = new Map();
         document.querySelectorAll('[data-i18n][contenteditable="true"]').forEach((el) => {
           const key = el.getAttribute('data-i18n');
           if (!key || !Object.prototype.hasOwnProperty.call(W17_PRISTINE[activeLang] || {}, key)) return;
-          const savedVal = w17CleanEditValue(w17ReadNodeValue(el));
-          if (savedVal === null) return;
-          if (w17Canon(savedVal) === w17Canon(W17_PRISTINE[activeLang][key])) {
+          if (!byKey.has(key)) byKey.set(key, []);
+          byKey.get(key).push(el);
+        });
+        byKey.forEach((els, key) => {
+          const pristineCanon = w17Canon(W17_PRISTINE[activeLang][key]);
+          const readVal = (el) => w17CleanEditValue(w17ReadNodeValue(el));
+          let val = null;
+          const src = sourceEl && els.includes(sourceEl) ? sourceEl : null;
+          if (src) {
+            val = readVal(src);
+          } else {
+            for (const el of els) {
+              const v = readVal(el);
+              if (v !== null && w17Canon(v) !== pristineCanon) { val = v; break; }
+            }
+          }
+          if (val === null || w17Canon(val) === pristineCanon) {
             delete state.editsByLang[activeLang][key];
             translations[activeLang][key] = W17_PRISTINE[activeLang][key];
+            val = null;
           } else {
-            state.editsByLang[activeLang][key] = savedVal;
-            translations[activeLang][key] = savedVal;
+            state.editsByLang[activeLang][key] = val;
+            translations[activeLang][key] = val;
           }
+          // Đồng bộ các node cùng khóa còn lại (không động vào node đang được gõ)
+          const finalVal = val === null ? W17_PRISTINE[activeLang][key] : val;
+          els.forEach((el) => {
+            if (el === document.activeElement || el === src) return;
+            if (w17Canon(w17ReadNodeValue(el)) !== w17Canon(finalVal)) renderSafeI18nHTML(el, finalVal);
+          });
         });
         state.nodeEdits = (state.nodeEdits && typeof state.nodeEdits === 'object') ? state.nodeEdits : {};
-        w17NodeIndex.forEach((entry, idx) => {
+        w17NodeIndex.forEach((entry) => {
           const now = entry.el.textContent || '';
-          if (now !== entry.orig) state.nodeEdits[idx] = { from: entry.orig, to: now };
-          else delete state.nodeEdits[idx];
+          if (now !== entry.orig) state.nodeEdits[entry.id] = { from: entry.orig, to: now };
+          else delete state.nodeEdits[entry.id];
         });
+        if (w17BrandIndex.length) {
+          state.brandEdits = {};
+          w17BrandIndex.forEach((entry, i) => {
+            const now = entry.el.textContent || '';
+            if (now !== entry.orig) state.brandEdits[i] = { from: entry.orig, to: now };
+          });
+        }
         localStorage.setItem(W17_STORAGE_JSON_KEY, JSON.stringify(state));
       } catch (e) {}
     }
@@ -3322,9 +3388,9 @@
       w17IndexEditableNodes();
       w17ApplyNodeEdits((w17ReadCachedEdits() || {}).nodeEdits);
 
-      document.body.addEventListener('input', () => {
+      document.body.addEventListener('input', (e) => {
         if (isVisualEditing) {
-          persistStructuredEdits();
+          persistStructuredEdits(e.target && e.target.closest ? e.target.closest('[data-i18n]') : null);
         }
       });
 
@@ -3401,6 +3467,8 @@
       `;
       document.body.insertBefore(toolbar, document.body.firstChild);
       if ('ResizeObserver' in window) new ResizeObserver(w17SyncChromeOffset).observe(toolbar);
+      w17IndexBrandNodes();
+      w17ApplyBrandEdits((w17ReadCachedEdits() || {}).brandEdits);
       return toolbar;
     }
 

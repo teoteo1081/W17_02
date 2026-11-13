@@ -26,6 +26,9 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+import extra_cases as X  # noqa: E402
+X.R = sys.modules[__name__]
+
 REPO = Path(__file__).resolve().parents[2]
 LOCALES = ["vi", "en", "es", "zh"]
 VIEWPORTS = [(320, 568), (375, 812), (390, 844), (768, 1024), (1024, 768), (1440, 900)]
@@ -111,7 +114,7 @@ class Env:
 # ----------------------------------------------------------------- JS helpers
 ORPHAN_JS = r"""
 () => {
-  const sel = 'h1[data-i18n], h2[data-i18n], [data-tail]';
+  const sel = 'h1, h2, [data-tail]';
   const bad = [], seen = [];
   const tokenRe = /[\u3400-\u9fff]|[^\s\u3400-\u9fff]+/g;
   document.querySelectorAll(sel).forEach((el) => {
@@ -277,24 +280,6 @@ def modal_probe(pg, svc):
     }""", svc)
 
 
-def reach_all_items(pg):
-    """Cuộn bằng wheel thật + phím PageDown, trả về số đầu việc đã từng nằm trọn trong vùng nhìn thấy của vùng cuộn."""
-    return pg.evaluate("""async () => {
-      const dlg = document.getElementById('ga4-modal-dialog');
-      const body = document.getElementById('ga4-modal-body');
-      const scroller = (getComputedStyle(body).overflowY !== 'visible' && body.scrollHeight > body.clientHeight + 1) ? body : dlg;
-      const items = [...document.querySelectorAll('#modal-service-packages li')];
-      const seen = new Set();
-      const check = () => {
-        const sr = scroller.getBoundingClientRect();
-        const vr = {top: Math.max(sr.top, 0), bottom: Math.min(sr.bottom, innerHeight)};
-        items.forEach((li, i) => { const r = li.getBoundingClientRect(); if (r.height > 0 && r.top >= vr.top - 1 && r.bottom <= vr.bottom + 1) seen.add(i); });
-      };
-      scroller.scrollTop = 0; check();
-      return {items: items.length, seenAtTop: seen.size};
-    }""")
-
-
 def t_f03(b, env, quick, shots):
     pages = [FINAL_PORTFOLIO, CREATOR_PORTFOLIO]
     vps = VIEWPORTS + [(720, 450)]
@@ -428,11 +413,11 @@ def t_f04_cta(b, env):
             texts[l] = pg.evaluate("[...document.querySelectorAll('[data-i18n=eco_btn_detail]')].map((e) => e.textContent.trim())")
         if len({tuple(v) for v in texts.values()}) != 4 or any(len(v) != 4 for v in texts.values()):
             bad.append(f"{rel}: CTA không đổi theo locale {texts}")
-        hero_ok = pg.evaluate("""() => { const h = document.querySelector('h1[data-i18n=hero_title]'); return h.querySelectorAll('br').length >= 1 && h.querySelectorAll('span.inline-block').length >= 1; }""")
-        set_lang(pg, "vi")
-        hero_ok = pg.evaluate("""() => { const h = document.querySelector('h1[data-i18n=hero_title]'); return h.querySelectorAll('br').length >= 1 && h.querySelectorAll('span.inline-block').length >= 1; }""")
-        if not hero_ok:
-            bad.append(f"{rel}: Hero mất br/span")
+        for l in LOCALES:
+            set_lang(pg, l)
+            hero_ok = pg.evaluate("""() => { const h = document.querySelector('h1[data-i18n=hero_title]'); return h.querySelectorAll('br').length >= 1 && h.querySelectorAll('span.inline-block').length >= 1; }""")
+            if not hero_ok:
+                bad.append(f"{rel}/{l}: Hero mất br/span")
     record("F04", "4 CTA 'Xem bảng chi tiết' dịch theo locale ở Final và Creator; Hero giữ <br> và span.inline-block sau khi đổi ngôn ngữ", not bad, " | ".join(bad))
     ctx.close()
 
@@ -899,7 +884,7 @@ def t_f09_keyboard(b, env):
         info = pg.evaluate("() => { const a = document.activeElement; const r = a.getBoundingClientRect(); return {id: a.id, text: (a.textContent || '').trim().slice(0, 20), inView: r.left >= 0 && r.right <= innerWidth}; }")
         if "Lưu file sạch" in info["text"] and info["inView"]:
             seen_save = True
-            focus_visible = pg.evaluate("getComputedStyle(document.activeElement).outlineStyle !== 'none' || getComputedStyle(document.activeElement).boxShadow !== 'none'")
+            focus_visible = pg.evaluate("() => { const c = getComputedStyle(document.activeElement); const o = c.outlineStyle !== 'none' && parseFloat(c.outlineWidth) > 0 && !/rgba\\(.*,\\s*0\\)$/.test(c.outlineColor); const s = c.boxShadow !== 'none' && !/rgba\\(0, 0, 0, 0\\)/.test(c.boxShadow.split(' ')[0]); return o || s; }")
             break
     record("F09", "bàn phím: Tab tới được nút 'Lưu file sạch (Final)' của Creator CV trên mobile 375px và nút có dấu hiệu focus nhìn thấy", seen_save and focus_visible)
     ctx.close()
@@ -964,11 +949,11 @@ def t_f10(env):
     with socket.create_connection(("127.0.0.1", env.port), timeout=10) as sock:
         crlf = bytes([13, 10])
         head_lines = [f"POST /api/save HTTP/1.1", f"Host: {host}", f"Origin: {base}", "Content-Type: application/json",
-                      f"X-W17-Token: {token}", f"Content-Length: {13 * 1024 * 1024}", "Connection: close"]
+                      f"X-W17-Token: {token}", f"Content-Length: {200 * 1024 * 1024}", "Connection: close"]
         sock.sendall(crlf.join(x.encode() for x in head_lines) + crlf + crlf)
         status_line = sock.recv(4096).split(crlf, 1)[0].decode("latin-1")
     if " 413 " not in status_line:
-        bad.append(f"body 13MB phải 413, nhận {status_line!r}")
+        bad.append(f"khai báo body 200MB phải 413, nhận {status_line!r}")
     untouched("payload lớn")
     s, _, _ = post(b"not json", raw=True)
     if s != 400:
@@ -1039,7 +1024,7 @@ def t_content(b, env):
               pbi: !!document.getElementById('pbi-ga4-dashboard'),
               apps: ['WRP Tax Services', 'Operation 0', 'TJ WordLoop', 'TJ Courses Hub'].map((n) => document.body.innerText.includes(n)),
               pos: document.body.innerText.includes('Operations & Data Analyst'),
-              nocommit: /(KPI|doanh thu|lead|ingresos|ventas|营收|线索|销售)/i.test(document.querySelector('[data-i18n=eco_card4_desc]').textContent),
+              nocommit: document.querySelector('[data-i18n=eco_card4_desc]').textContent.includes(({vi: 'không cam kết doanh thu/lead', en: 'no revenue/lead KPI commitments', es: 'sin compromiso de ingresos/leads', zh: '不承诺获客或营收 KPI'})[document.documentElement.lang]),
               pkgs: document.querySelectorAll('#modal-service-packages [data-service-pkg]').length })""")
             for bd in badges:
                 if bd not in info["badges"]:
@@ -1121,6 +1106,11 @@ def t_static(env):
     record("STATIC", "Creator đồng bộ Final (sync_creators --check); không còn khóa portfolio_*; không còn vòng lặp removeItem xóa cache", not bad, " | ".join(bad))
 
 
+def snapshot_repo():
+    names = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=REPO, capture_output=True, text=True).stdout.splitlines()
+    return {n: sha(REPO / n) for n in names if (REPO / n).is_file()}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--shots", default=None)
@@ -1131,7 +1121,7 @@ def main():
     if args.shots:
         Path(args.shots).mkdir(parents=True, exist_ok=True)
 
-    real_before = {n: sha(REPO / n) for n in TRACKED}
+    real_before = snapshot_repo()
     env = Env()
     env.prepare()
     env.start()
@@ -1145,11 +1135,12 @@ def main():
                 ("F04", lambda: (t_i18n(b, env), t_f04_cta(b, env))),
                 ("F06", lambda: t_f06_cv(b, env)),
                 ("F05", lambda: (t_f05(b, env), t_f05_migration(b, env), t_f05_nodes(b, env))),
-                ("F03", lambda: (t_f03(b, env, args.quick, args.shots), t_f03_keyboard(b, env))),
+                ("F03", lambda: (t_f03(b, env, args.quick, args.shots), t_f03_keyboard(b, env), X.t_f03_wheel(b, env))),
                 ("F08", lambda: t_f08(b, env, args.quick, args.shots)),
                 ("F09", lambda: (t_f09(b, env, args.quick, args.shots), t_f09_keyboard(b, env))),
                 ("F07", lambda: (t_f07(b, env), t_f07_dom_scan(b, env))),
                 ("F10", lambda: t_f10(env)),
+                ("N", lambda: (X.t_n01_migration_cards(b, env), X.t_n02_duplicate_keys(b, env), X.t_n03_node_identity(b, env), X.t_n04_brand(b, env), X.t_server_extra(env))),
                 ("CONTENT", lambda: t_content(b, env)),
                 ("NAV", lambda: t_nav(b, env)),
                 ("RESP", lambda: t_overflow(b, env, args.quick)),
@@ -1164,7 +1155,7 @@ def main():
             b.close()
     finally:
         env.stop()
-    real_after = {n: sha(REPO / n) for n in TRACKED}
+    real_after = snapshot_repo()
     record("SAFETY", "file làm việc thật không bị bộ kiểm thử ghi (hash trước = sau)", real_before == real_after)
     fails = [r for r in RESULTS if r[2] != "PASS"]
     print(f"\n{len(RESULTS) - len(fails)}/{len(RESULTS)} PASS")
