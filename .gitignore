@@ -7,3 +7,6 @@ venv/
 service_account*.json
 credentials*.json
 _old/
+
+.w17_backups/
+.w17_save.lock

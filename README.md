@@ -51,3 +51,25 @@ Sau đó mở trình duyệt tại địa chỉ:
 - **Portfolio Showcase (Final)**: `http://localhost:8000/index.html`
 - **Hồ Sơ Năng Lực (Final)**: `http://localhost:8000/index_portfolio_clean.html`
 - **Visual Editor Workspace**: `http://localhost:8000/editor_workspace/editor_portfolio.html`
+
+### Bảo vệ endpoint lưu file (`/api/save`)
+- Server chỉ bind `127.0.0.1`, **không bật CORS**; trang trong editor tự lấy token phiên ngẫu nhiên qua `GET /api/session` (chỉ trả cho đúng origin của dev server) rồi gửi kèm header `X-W17-Token`.
+- Chỉ ghi `index.html` và `index_portfolio_clean.html`, body tối đa 12MB, HTML phải đúng cấu trúc và không còn trạng thái editor; ghi nguyên tử và tự sao lưu bản cũ vào `.w17_backups/` (giữ 5 bản, đã `.gitignore`).
+- Mở file bằng `file://` vẫn tải được file sạch về máy nhưng **không** ghi trực tiếp vào dự án; hãy dùng `python dev_server.py`.
+
+### Creator ↔ Final (một nguồn duy nhất)
+`index.html` và `index_portfolio_clean.html` là nguồn; hai file trong `editor_workspace/` được **sinh** từ chúng:
+```bash
+python tools/sync_creators.py          # ghi lại hai Creator sau khi sửa Final
+python tools/sync_creators.py --check  # báo lệch (dùng trong kiểm thử)
+```
+Dữ liệu chỉnh sửa được lưu theo schema (không còn snapshot `innerHTML`) và được nhúng vào file Final khi xuất, nên mở lại bằng cache trống vẫn đủ nội dung.
+
+### Kiểm thử hồi quy
+```bash
+pip install playwright && python -m playwright install chromium
+python -X utf8 tests/regression/run_all.py --quick   # nhanh
+python -X utf8 tests/regression/run_all.py           # đầy đủ 6 viewport x 4 locale
+python -X utf8 tests/regression/native_zoom.py       # zoom trình duyệt 200% (native)
+```
+Bộ kiểm thử chạy trên bản sao tạm của repo và server thật trỏ vào thư mục tạm; không ghi file làm việc thật.

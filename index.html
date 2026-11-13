@@ -56,6 +56,27 @@
       transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* AGENTS §1: cân bằng dòng cho H1/H2 và đoạn Hero, tránh chữ mồ côi */
+    h1, h2, [data-tail] {
+      text-wrap: balance;
+    }
+
+    /* Modal GA4: mobile / viewport thấp cho cả hộp thoại cuộn được, để mọi nhóm đầu việc đều tiếp cận được */
+    @media (max-width: 639px), (max-height: 620px) {
+      #ga4-modal-dialog {
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+      }
+      #ga4-modal-body {
+        overflow: visible !important;
+        flex: none !important;
+      }
+    }
+    #ga4-modal-body:focus-visible {
+      outline: 2px solid #34d399;
+      outline-offset: -2px;
+    }
+
     /* Direct inline editing styles */
     body.is-editing [contenteditable="true"] {
       outline: 1px dashed rgba(245, 158, 11, 0.65);
@@ -189,13 +210,13 @@
           <h1 data-i18n="hero_title" class="editable-node text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug md:leading-snug lg:leading-snug max-w-5xl mx-auto text-center text-balance mb-6">
             Dữ Liệu Chuẩn Xác • Ra Quyết Định Đúng<br class="hidden md:inline"> Tối Ưu Ngân Sách &amp; Tăng Trưởng <span class="inline-block">Doanh Thu</span>
           </h1>
-          <p data-i18n="hero_positioning" class="editable-node text-base sm:text-xl font-semibold bg-gradient-to-r from-emerald-700 to-cyan-700 dark:from-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent">
+          <p data-i18n="hero_positioning" data-tail class="editable-node text-balance text-base sm:text-xl font-semibold bg-gradient-to-r from-emerald-700 to-cyan-700 dark:from-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent">
             Operations & Data Analyst • Process Automation • Lean Web & Tracking Support
           </p>
         </div>
 
         <!-- Narrative Description -->
-        <p data-i18n="hero_desc" class="editable-node text-sm sm:text-base lg:text-lg max-w-4xl mx-auto text-slate-700 dark:text-slate-300 leading-relaxed text-center text-balance">
+        <p data-i18n="hero_desc" data-tail class="editable-node text-sm sm:text-base lg:text-lg max-w-4xl mx-auto text-slate-700 dark:text-slate-300 leading-relaxed text-center text-balance">
           Chuyên sâu triển khai trọn gói vận hành và dữ liệu (End-to-End Operations & Data Analyst): tự động hóa quy trình, thiết kế Dashboard điều hành quản trị dòng tiền, hỗ trợ xây dựng Lean Web và hạ tầng tracking đo lường chuẩn xác <span class="inline-block">(không cam kết KPI doanh số).</span>
         </p>
 
@@ -416,14 +437,14 @@
 
       <!-- Section Heading -->
       <div class="text-center max-w-4xl mx-auto space-y-3">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-500/30">
-          <i data-lucide="radar" class="w-3.5 h-3.5"></i>
-          <span data-i18n="eco_badge" class="editable-node">HỆ SINH THÁI DỊCH VỤ &amp; GIẢI PHÁP THỰC CHIẾN</span>
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-500/30 max-w-full">
+          <i data-lucide="radar" class="w-3.5 h-3.5 shrink-0"></i>
+          <span data-i18n="eco_badge" data-tail class="editable-node text-balance">HỆ SINH THÁI DỊCH VỤ &amp; GIẢI PHÁP THỰC CHIẾN</span>
         </div>
         <h2 data-i18n="eco_title" class="editable-node text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight text-balance">
           Hệ Sinh Thái Sản Phẩm &amp; Dịch Vụ Của TJ <span class="inline-block">(Service Ecosystem)</span>
         </h2>
-        <p data-i18n="eco_property" class="editable-node text-xs sm:text-sm font-mono font-semibold text-cyan-700 dark:text-cyan-400">
+        <p data-i18n="eco_property" data-tail class="editable-node text-balance text-xs sm:text-sm font-mono font-semibold text-cyan-700 dark:text-cyan-400">
           Core: End-to-End Operations &amp; Data • Support: Lean Web &amp; Performance Tracking
         </p>
       </div>
@@ -432,7 +453,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         
         <!-- Thẻ 1: End-to-End Operational -->
-        <div onclick="if(!document.body.classList.contains('is-editing')) openGA4DrilldownModal('pages', this.querySelector('button'))" class="cursor-pointer group p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500 dark:hover:border-emerald-400 shadow-lg shadow-emerald-500/5 transition-all flex flex-col justify-between">
+        <div onclick="if(!document.body.classList.contains('is-editing')) openGA4DrilldownModal('pages', this.querySelector('button'), 'p1')" class="cursor-pointer group p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500 dark:hover:border-emerald-400 shadow-lg shadow-emerald-500/5 transition-all flex flex-col justify-between">
           <div class="space-y-3 pb-2">
             <div class="flex items-center justify-between">
               <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -448,7 +469,7 @@
             </p>
           </div>
           <div class="pt-4 mt-4 border-t border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between">
-            <button type="button" aria-haspopup="dialog" aria-controls="ga4-drilldown-modal" onclick="event.stopPropagation(); openGA4DrilldownModal('pages', this)" class="no-edit inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-cyan-600 dark:hover:text-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded transition-colors cursor-pointer">
+            <button type="button" aria-haspopup="dialog" aria-controls="ga4-drilldown-modal" onclick="event.stopPropagation(); openGA4DrilldownModal('pages', this, 'p1')" class="no-edit inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-cyan-600 dark:hover:text-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded transition-colors cursor-pointer">
               <span data-i18n="eco_btn_detail">[📊 Xem bảng chi tiết ↗]</span>
             </button>
             <span data-i18n="eco_sub_pages" class="no-edit text-[10px] font-mono text-slate-500 dark:text-slate-400">Workflow Automation</span>
@@ -456,7 +477,7 @@
         </div>
 
         <!-- Thẻ 2: Data Analyst & BI Dashboard -->
-        <div onclick="if(!document.body.classList.contains('is-editing')) openGA4DrilldownModal('countries', this.querySelector('button'))" class="cursor-pointer group p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-cyan-500/30 hover:border-cyan-500 dark:hover:border-cyan-400 shadow-lg shadow-cyan-500/5 transition-all flex flex-col justify-between">
+        <div onclick="if(!document.body.classList.contains('is-editing')) openGA4DrilldownModal('countries', this.querySelector('button'), 'p2')" class="cursor-pointer group p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-cyan-500/30 hover:border-cyan-500 dark:hover:border-cyan-400 shadow-lg shadow-cyan-500/5 transition-all flex flex-col justify-between">
           <div class="space-y-3 pb-2">
             <div class="flex items-center justify-between">
               <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
@@ -472,7 +493,7 @@
             </p>
           </div>
           <div class="pt-4 mt-4 border-t border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between">
-            <button type="button" aria-haspopup="dialog" aria-controls="ga4-drilldown-modal" onclick="event.stopPropagation(); openGA4DrilldownModal('countries', this)" class="no-edit inline-flex items-center gap-1 text-xs font-bold text-cyan-700 dark:text-cyan-400 hover:text-emerald-600 dark:hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded transition-colors cursor-pointer">
+            <button type="button" aria-haspopup="dialog" aria-controls="ga4-drilldown-modal" onclick="event.stopPropagation(); openGA4DrilldownModal('countries', this, 'p2')" class="no-edit inline-flex items-center gap-1 text-xs font-bold text-cyan-700 dark:text-cyan-400 hover:text-emerald-600 dark:hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded transition-colors cursor-pointer">
               <span data-i18n="eco_btn_detail">[📊 Xem bảng chi tiết ↗]</span>
             </button>
             <span data-i18n="eco_sub_countries" class="no-edit text-[10px] font-mono text-slate-500 dark:text-slate-400">Executive BI</span>
@@ -480,7 +501,7 @@
         </div>
 
         <!-- Thẻ 3: Website & Landing Page -->
-        <div onclick="if(!document.body.classList.contains('is-editing')) openGA4DrilldownModal('powerbi', this.querySelector('button'))" class="cursor-pointer group p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500 dark:hover:border-emerald-400 shadow-lg shadow-emerald-500/5 transition-all flex flex-col justify-between">
+        <div onclick="if(!document.body.classList.contains('is-editing')) openGA4DrilldownModal('powerbi', this.querySelector('button'), 'p3')" class="cursor-pointer group p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500 dark:hover:border-emerald-400 shadow-lg shadow-emerald-500/5 transition-all flex flex-col justify-between">
           <div class="space-y-3 pb-2">
             <div class="flex items-center justify-between">
               <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -496,7 +517,7 @@
             </p>
           </div>
           <div class="pt-4 mt-4 border-t border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between">
-            <button type="button" aria-haspopup="dialog" aria-controls="ga4-drilldown-modal" onclick="event.stopPropagation(); openGA4DrilldownModal('powerbi', this)" class="no-edit inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-cyan-600 dark:hover:text-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded transition-colors cursor-pointer">
+            <button type="button" aria-haspopup="dialog" aria-controls="ga4-drilldown-modal" onclick="event.stopPropagation(); openGA4DrilldownModal('powerbi', this, 'p3')" class="no-edit inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-cyan-600 dark:hover:text-cyan-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 rounded transition-colors cursor-pointer">
               <span data-i18n="eco_btn_detail">[📊 Xem bảng chi tiết ↗]</span>
             </button>
             <span data-i18n="eco_sub_trend" class="no-edit text-[10px] font-mono text-slate-500 dark:text-slate-400">Lean Web Build</span>
@@ -504,7 +525,7 @@
         </div>
 
         <!-- Thẻ 4: Tracking Performance -->
-        <div onclick="if(!document.body.classList.contains('is-editing')) openGA4DrilldownModal('pages', this.querySelector('button'))" class="cursor-pointer group p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-cyan-500/30 hover:border-cyan-500 dark:hover:border-cyan-400 shadow-lg shadow-cyan-500/5 transition-all flex flex-col justify-between">
+        <div onclick="if(!document.body.classList.contains('is-editing')) openGA4DrilldownModal('pages', this.querySelector('button'), 'p4')" class="cursor-pointer group p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-cyan-500/30 hover:border-cyan-500 dark:hover:border-cyan-400 shadow-lg shadow-cyan-500/5 transition-all flex flex-col justify-between">
           <div class="space-y-3 pb-2">
             <div class="flex items-center justify-between">
               <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
@@ -520,7 +541,7 @@
             </p>
           </div>
           <div class="pt-4 mt-4 border-t border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between">
-            <button type="button" aria-haspopup="dialog" aria-controls="ga4-drilldown-modal" onclick="event.stopPropagation(); openGA4DrilldownModal('pages', this)" class="no-edit inline-flex items-center gap-1 text-xs font-bold text-cyan-700 dark:text-cyan-400 hover:text-emerald-600 dark:hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded transition-colors cursor-pointer">
+            <button type="button" aria-haspopup="dialog" aria-controls="ga4-drilldown-modal" onclick="event.stopPropagation(); openGA4DrilldownModal('pages', this, 'p4')" class="no-edit inline-flex items-center gap-1 text-xs font-bold text-cyan-700 dark:text-cyan-400 hover:text-emerald-600 dark:hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded transition-colors cursor-pointer">
               <span data-i18n="eco_btn_detail">[📊 Xem bảng chi tiết ↗]</span>
             </button>
             <span data-i18n="eco_sub_bq" class="no-edit text-[10px] font-mono text-slate-500 dark:text-slate-400">Ops + MarOps QA</span>
@@ -1014,10 +1035,10 @@
 
   <!-- ==================== INTERACTIVE DRILL-DOWN MODAL (NOTION / POWER BI DARK DASHBOARD) ==================== -->
   <div id="ga4-drilldown-modal" aria-hidden="true" onclick="if(event.target === this) closeGA4DrilldownModal()" class="no-edit hidden fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-6 backdrop-blur-md bg-black/75 transition-opacity no-print" role="dialog" aria-modal="true" aria-labelledby="ga4-modal-title">
-    <div class="w-full max-w-6xl max-h-[92vh] rounded-2xl bg-slate-900 dark:bg-slate-950 border border-slate-700/90 text-slate-100 shadow-2xl flex flex-col overflow-hidden">
+    <div id="ga4-modal-dialog" style="max-height:92vh;max-height:92dvh" class="w-full max-w-6xl max-h-[92vh] rounded-2xl bg-slate-900 dark:bg-slate-950 border border-slate-700/90 text-slate-100 shadow-2xl flex flex-col overflow-hidden">
       
       <!-- Modal Header -->
-      <div class="px-4 sm:px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-3">
+      <div class="shrink-0 px-4 sm:px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 flex-wrap">
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold">
             <i data-lucide="database" class="w-3.5 h-3.5"></i>
@@ -1038,7 +1059,7 @@
       </div>
 
       <!-- Modal Navigation Tabs + Quick Filter Slicer -->
-      <div class="px-4 sm:px-6 py-3 bg-slate-900/70 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="shrink-0 px-4 sm:px-6 py-3 bg-slate-900/70 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div role="tablist" aria-label="GA4 Drill-down Views" class="flex flex-wrap items-center gap-2">
           <button type="button" role="tab" aria-selected="true" aria-controls="ga4-modal-panel-countries" id="ga4-tab-btn-countries" data-i18n="ga4_tab_countries" onclick="switchGA4ModalTab('countries')" class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 text-slate-950 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 transition-all cursor-pointer">
             🌍 Tab 1: Chi Tiết Theo Quốc Gia (Top 10)
@@ -1061,7 +1082,7 @@
       </div>
 
       <!-- Modal Scrollable Body -->
-      <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-slate-950">
+      <div id="ga4-modal-body" role="region" tabindex="0" data-i18n-aria="aria_modal_body" aria-label="Nội dung chi tiết, cuộn để xem toàn bộ" class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 min-h-0 bg-slate-950">
         
         <!-- TAB 1: CHI TIẾT THEO QUỐC GIA -->
         <div id="ga4-modal-panel-countries" role="tabpanel" aria-labelledby="ga4-tab-btn-countries" class="space-y-4">
@@ -1174,16 +1195,13 @@
           </div>
         </div>
 
-      </div>
-
-      
-        <!-- BẢNG CHI TIẾT 3 GÓI ĐẦU VIỆC THỰC CHIẾN (SERVICE ECOSYSTEM PACKAGES) -->
+        <!-- BẢNG CHI TIẾT CÁC GÓI ĐẦU VIỆC THỰC CHIẾN (SERVICE ECOSYSTEM PACKAGES) — nằm TRONG vùng cuộn của modal -->
         <div id="modal-service-packages" class="mt-6 p-4 sm:p-5 rounded-xl bg-slate-900/90 border border-emerald-500/30 space-y-4">
           <div class="flex items-center justify-between flex-wrap gap-2 border-b border-slate-800 pb-3">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <h4 data-i18n="modal_pkg_heading" class="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
-                3 Gói Đầu Việc Triển Khai Thực Chiến Của TJ (Service Scope)
+                4 Gói Đầu Việc Triển Khai Thực Chiến Của TJ (Service Scope)
               </h4>
             </div>
             <span data-i18n="modal_pkg_note" class="text-[11px] font-mono text-slate-400">
@@ -1193,7 +1211,7 @@
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <!-- Gói 1 -->
-            <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2">
+            <div id="modal-pkg-p1" data-service-pkg="p1" class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2">
               <div class="flex items-center justify-between">
                 <span data-i18n="modal_p1_title" class="font-bold text-emerald-400 text-xs sm:text-sm">1. End-to-End Operational</span>
                 <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">Core Service</span>
@@ -1206,7 +1224,7 @@
             </div>
 
             <!-- Gói 2 -->
-            <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2">
+            <div id="modal-pkg-p2" data-service-pkg="p2" class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2">
               <div class="flex items-center justify-between">
                 <span data-i18n="modal_p2_title" class="font-bold text-cyan-400 text-xs sm:text-sm">2. Data Analyst & BI Dashboard</span>
                 <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">Core Service</span>
@@ -1219,7 +1237,7 @@
             </div>
 
             <!-- Gói 3 -->
-            <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2">
+            <div id="modal-pkg-p3" data-service-pkg="p3" class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2">
               <div class="flex items-center justify-between">
                 <span data-i18n="modal_p3_title" class="font-bold text-amber-400 text-xs sm:text-sm">3. Website & Landing Page</span>
                 <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">Tech Support</span>
@@ -1232,7 +1250,7 @@
             </div>
 
             <!-- Gói 4 -->
-            <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2">
+            <div id="modal-pkg-p4" data-service-pkg="p4" class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2">
               <div class="flex items-center justify-between">
                 <span data-i18n="modal_p4_title" class="font-bold text-indigo-400 text-xs sm:text-sm">4. Tracking Performance</span>
                 <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">MarOps Tech</span>
@@ -1246,8 +1264,10 @@
           </div>
         </div>
 
+      </div>
+
       <!-- Modal Footer -->
-      <div class="px-4 sm:px-6 py-3 bg-slate-900 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs font-mono text-slate-400">
+      <div class="shrink-0 px-4 sm:px-6 py-3 bg-slate-900 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs font-mono text-slate-400">
         <span data-i18n="ga4_modal_footer_source">Nguồn: Google Analytics 4 (GA4 Validated Property) • Đồng bộ BigQuery <strong class="text-cyan-400">airy-web-503408-c6</strong></span>
         <div class="flex items-center gap-3">
           <span data-i18n="ga4_modal_esc_hint" class="text-[11px] text-slate-400">Bấm phím <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">Esc</kbd> để đóng</span>
@@ -1261,7 +1281,10 @@
   </div>
 
   <!-- Toast Notification -->
-  <div id="toast-notification" class="hidden fixed bottom-5 right-5 z-[70] px-4 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs sm:text-sm shadow-2xl no-print"></div>
+  <div id="toast-notification" role="status" aria-live="polite" class="hidden fixed bottom-5 right-5 z-[70] px-4 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs sm:text-sm shadow-2xl no-print"></div>
+
+  <!-- Chỉnh sửa đã nhúng khi xuất Final (dữ liệu JSON thuần, không thực thi): mở lại với cache trống vẫn giữ nội dung -->
+  <script type="application/json" id="w17-baked-edits">{}</script>
 
   <!-- Translations & Core Logic -->
   <script id="core-portfolio-script">
@@ -1284,7 +1307,7 @@
         modal_p1_item1: "(1) Tự động hóa nhập liệu & đồng bộ dữ liệu (Python, Playwright, Google Sheets)",
         modal_p1_title: "1. End-to-End Operational",
         modal_pkg_note: "* Vận hành & Dữ liệu trọn gói • MarOps hỗ trợ kỹ thuật số liệu sạch",
-        modal_pkg_heading: "3 Gói Đầu Việc Triển Khai Thực Chiến Của TJ (Service Scope)",
+        modal_pkg_heading: "4 Gói Đầu Việc Triển Khai Thực Chiến Của TJ (Service Scope)",
         nav_about: "Giới thiệu",
         nav_metrics: "Chỉ số",
         nav_dashboard: "Mô phỏng Phễu",
@@ -1454,7 +1477,8 @@
         aria_country_telemetry_filter: "Bộ lọc đo lường theo quốc gia",
         aria_pbi_date_slicer: "Chọn khoảng thời gian",
         aria_ga4_modal: "Cửa sổ chi tiết GA4 & Power BI",
-        aria_modal_close: "Đóng cửa sổ"
+        aria_modal_close: "Đóng cửa sổ",
+        aria_modal_body: "Nội dung chi tiết, cuộn để xem toàn bộ"
       },
       en: {
         modal_p4_item3: "(3) Marketing telemetry dashboard (Technical hygiene & clean metrics, no KPI commit)",
@@ -1474,7 +1498,7 @@
         modal_p1_item1: "(1) Automated data capture & sync workflows (Python, Playwright, Google Sheets)",
         modal_p1_title: "1. End-to-End Operational",
         modal_pkg_note: "* Turnkey Operations & Data • Technical MarOps infrastructure without vanity metrics",
-        modal_pkg_heading: "TJ's 3 Practical Service Packages (Service Scope)",
+        modal_pkg_heading: "TJ's 4 Practical Service Packages (Service Scope)",
         nav_about: "About",
         nav_metrics: "Metrics",
         nav_dashboard: "Funnel Simulation",
@@ -1644,7 +1668,8 @@
         aria_country_telemetry_filter: "Country Telemetry Filter",
         aria_pbi_date_slicer: "Select Date Range",
         aria_ga4_modal: "GA4 & Power BI Details Dialog",
-        aria_modal_close: "Close dialog"
+        aria_modal_close: "Close dialog",
+        aria_modal_body: "Detail content, scroll to read everything"
       },
       es: {
         modal_p4_item3: "(3) Dashboard de métricas de marketing (Infraestructura técnica y datos limpios, sin KPI de ventas)",
@@ -1664,7 +1689,7 @@
         modal_p1_item1: "(1) Automatización de captura y sincronización de datos (Python, Playwright, Google Sheets)",
         modal_p1_title: "1. End-to-End Operational",
         modal_pkg_note: "* Operaciones y Datos integrales • Soporte técnico MarOps con datos limpios",
-        modal_pkg_heading: "3 Paquetes de Trabajo Práctico de TJ (Service Scope)",
+        modal_pkg_heading: "4 Paquetes de Trabajo Práctico de TJ (Service Scope)",
         nav_about: "Sobre mí",
         nav_metrics: "Métricas",
         nav_dashboard: "Simulación de Embudo",
@@ -1834,7 +1859,8 @@
         aria_country_telemetry_filter: "Filtro de telemetría por país",
         aria_pbi_date_slicer: "Seleccionar rango de fechas",
         aria_ga4_modal: "Diálogo de detalles de GA4 y Power BI",
-        aria_modal_close: "Cerrar ventana"
+        aria_modal_close: "Cerrar ventana",
+        aria_modal_body: "Contenido detallado, desplázate para verlo todo"
       },
       zh: {
         modal_p4_item3: "(3) 营销数据监控看板（技术底座与数据纯净度保障，不承诺营销效果 KPI）",
@@ -1854,7 +1880,7 @@
         modal_p1_item1: "(1) 业务录入与跨平台数据同步自动化（Python、Playwright、Google Sheets）",
         modal_p1_title: "1. End-to-End Operational",
         modal_pkg_note: "* 运营与数据全链路托管 • MarOps 纯技术底座支持与数据保真",
-        modal_pkg_heading: "TJ 实战交付的 3 大落地服务包 (Service Scope)",
+        modal_pkg_heading: "TJ 实战交付的 4 大落地服务包 (Service Scope)",
         nav_about: "关于我",
         nav_metrics: "关键指标",
         nav_dashboard: "漏斗模拟",
@@ -2024,7 +2050,8 @@
         aria_country_telemetry_filter: "国家/地区遥测筛选",
         aria_pbi_date_slicer: "选择时间范围",
         aria_ga4_modal: "GA4 与 Power BI 详情弹窗",
-        aria_modal_close: "关闭弹窗"
+        aria_modal_close: "关闭弹窗",
+        aria_modal_body: "详细内容，滚动查看全部"
       }
     };
 
@@ -2078,7 +2105,27 @@
 
     let currentRegion = 'all';
     let currentLang = 'vi';
+    // ---- W17_02: khóa lưu trữ có namespace + dữ liệu chỉnh sửa có schema (F01/F02/F05) ----
     const W17_STORAGE_JSON_KEY = 'w17_02_portfolio_edits_v1';
+    const W17_LANG_KEY = 'w17_02_lang';
+    const W17_THEME_KEY = 'w17_02_theme';
+    const W17_LOCALES = ['vi', 'en', 'es', 'zh'];
+    // Creator cũ lưu nguyên khối innerHTML ở hai key này. Chỉ ĐỌC để chuyển sang dữ liệu có schema; KHÔNG bao giờ xóa.
+    const W17_LEGACY_SNAPSHOT_KEYS = ['w17_02_portfolio_edited_html_v1', 'w17_02_portfolio_edited_header_v1'];
+    const W17_IS_CREATOR = document.documentElement.getAttribute('data-w17-mode') === 'creator';
+    const W17_PRISTINE = JSON.parse(JSON.stringify(translations));
+
+    function w17GetPref(key, fallback, allowed) {
+      try {
+        const v = localStorage.getItem(key);
+        if (v !== null && (!allowed || allowed.includes(v))) return v;
+      } catch (e) {}
+      return fallback;
+    }
+
+    function w17SetPref(key, value) {
+      try { localStorage.setItem(key, value); } catch (e) {}
+    }
 
     function escapeHtmlSafe(str) {
       return String(str ?? '')
@@ -2131,71 +2178,228 @@
       }
     }
 
+    // ---- Bảo vệ cụm cuối câu (AGENTS.md §1): tự bọc 2 từ cuối trong span.inline-block khi render ----
+    const W17_TAIL_SELECTOR = 'h1[data-i18n], h2[data-i18n], [data-tail]';
+
+    function w17UnwrapAutoTail(root) {
+      root.querySelectorAll('span[data-auto-tail]').forEach((s) => {
+        s.replaceWith(document.createTextNode(s.textContent || ''));
+      });
+      root.normalize();
+    }
+
+    function w17ProtectTail(el) {
+      if (!el) return;
+      w17UnwrapAutoTail(el);
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let lastText = null;
+      let node;
+      while ((node = walker.nextNode())) {
+        if (node.nodeValue.trim()) lastText = node;
+      }
+      if (!lastText) return;
+      // Cụm cuối đã được bảo vệ thủ công trong bản dịch (span.inline-block)
+      const guarded = lastText.parentElement && lastText.parentElement.closest('span.inline-block');
+      if (guarded && el.contains(guarded)) {
+        const inner = (guarded.textContent || '').trim();
+        const enough = /\S+\s+\S+/.test(inner) || (/[㐀-鿿]/.test(inner) && inner.length >= 3);
+        // Span thủ công chỉ có 1 từ vẫn để lại chữ mồ côi: kéo thêm từ liền trước vào cùng một cụm không ngắt dòng
+        const prev = guarded.previousSibling;
+        if (!enough && prev && prev.nodeType === Node.TEXT_NODE) {
+          const m = prev.nodeValue.match(/^([\s\S]*?)(\S+)(\s+)$/);
+          if (m) {
+            const wrap = document.createElement('span');
+            wrap.className = 'inline-block';
+            wrap.setAttribute('data-auto-tail', '');
+            prev.nodeValue = m[1];
+            guarded.parentNode.insertBefore(wrap, guarded);
+            wrap.appendChild(document.createTextNode(m[2] + m[3]));
+            wrap.appendChild(guarded);
+          }
+        }
+        return;
+      }
+      const raw = lastText.nodeValue;
+      const body = raw.replace(/\s+$/, '');
+      const tail = raw.slice(body.length);
+      let splitAt = -1;
+      const twoWords = body.match(/\S+\s+\S+$/);
+      if (twoWords) {
+        splitAt = body.length - twoWords[0].length;
+      } else if (/[㐀-鿿]/.test(body) && body.length > 3) {
+        splitAt = body.length - 3;
+      }
+      if (splitAt < 0) return;
+      const span = document.createElement('span');
+      span.className = 'inline-block';
+      span.setAttribute('data-auto-tail', '');
+      span.textContent = body.slice(splitAt);
+      lastText.nodeValue = body.slice(0, splitAt);
+      lastText.parentNode.insertBefore(span, lastText.nextSibling);
+      if (tail) lastText.parentNode.insertBefore(document.createTextNode(tail), span.nextSibling);
+    }
+
     // Sanitizer cho chuỗi i18n: phân biệt plain text và rich text (<br>, <span>, <strong>, <code>, <kbd>)
     function renderSafeI18nHTML(el, rawVal) {
       if (!el) return;
       const val = String(rawVal ?? '');
       if (!/<(?:br|span|strong|code|kbd)\b/i.test(val)) {
         el.textContent = val;
-        return;
+      } else {
+        const template = document.createElement('template');
+        template.innerHTML = val;
+        sanitizeRichFragment(template.content);
+        el.replaceChildren(template.content.cloneNode(true));
       }
-      const template = document.createElement('template');
-      template.innerHTML = val;
-      sanitizeRichFragment(template.content);
-      el.replaceChildren(template.content.cloneNode(true));
+      if (el.matches(W17_TAIL_SELECTOR)) w17ProtectTail(el);
     }
 
-    function loadStructuredEditsIntoTranslations() {
+    // ---- Dữ liệu chỉnh sửa có schema: { schema: 1, editsByLang: { vi: { i18nKey: "text" } } } ----
+    function w17ReadBakedEdits() {
       try {
-        [
-          'w17_portfolio_edited_html',
-          'w17_portfolio_edited_html_v2',
-          'w17_portfolio_edited_html_v3',
-          'w17_portfolio_edited_html_v4',
-          'w17_portfolio_edited_html_v5',
-          'w17_portfolio_edited_html_v6',
-          'w17_portfolio_edited_html_v7',
-          'w17_portfolio_edited_html_v8',
-          'w17_portfolio_edited_html_v9',
-          'w17_portfolio_edited_html_v10',
-          'w17_portfolio_edited_html_v11',
-          'w17_portfolio_edited_html_v12',
-          'w17_02_portfolio_edited_html_v1',
-          'w17_portfolio_edited_header_v4',
-          'w17_portfolio_edited_header_v5',
-          'w17_portfolio_edited_header_v6',
-          'w17_portfolio_edited_header_v7',
-          'w17_portfolio_edited_header_v8',
-          'w17_portfolio_edited_header_v9',
-          'w17_portfolio_edited_header_v10',
-          'w17_portfolio_edited_header_v11',
-          'w17_portfolio_edited_header_v12',
-          'w17_02_portfolio_edited_header_v1'
-        ].forEach((k) => localStorage.removeItem(k));
+        const el = document.getElementById('w17-baked-edits');
+        const parsed = el ? JSON.parse(el.textContent || 'null') : null;
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch (e) {
+        return null;
+      }
+    }
 
+    function w17ReadCachedEdits() {
+      try {
         const raw = localStorage.getItem(W17_STORAGE_JSON_KEY);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object' || !parsed.editsByLang) return;
-        Object.keys(parsed.editsByLang).forEach((langKey) => {
-          const langEdits = parsed.editsByLang[langKey];
-          if (translations[langKey] && langEdits && typeof langEdits === 'object') {
-            Object.keys(langEdits).forEach((i18nKey) => {
-              if (typeof langEdits[i18nKey] === 'string') {
-                const val = langEdits[i18nKey];
-                if (/<(?:br|span|strong|code|kbd)\b/i.test(val)) {
-                  const tpl = document.createElement('template');
-                  tpl.innerHTML = val;
-                  sanitizeRichFragment(tpl.content);
-                  translations[langKey][i18nKey] = tpl.innerHTML;
-                } else {
-                  translations[langKey][i18nKey] = val;
-                }
-              }
-            });
-          }
+        const parsed = raw ? JSON.parse(raw) : null;
+        return parsed && typeof parsed === 'object' ? parsed : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function w17CleanEditValue(val) {
+      if (typeof val !== 'string' || val.length > 8000) return null;
+      if (/<(?:br|span|strong|code|kbd)\b/i.test(val)) {
+        const tpl = document.createElement('template');
+        tpl.innerHTML = val;
+        sanitizeRichFragment(tpl.content);
+        return tpl.innerHTML;
+      }
+      return val;
+    }
+
+    function w17ApplyEditMap(map) {
+      if (!map || typeof map !== 'object') return;
+      Object.keys(map).forEach((langKey) => {
+        if (!Object.prototype.hasOwnProperty.call(translations, langKey)) return;
+        const langEdits = map[langKey];
+        if (!langEdits || typeof langEdits !== 'object') return;
+        Object.keys(langEdits).forEach((k) => {
+          if (!Object.prototype.hasOwnProperty.call(translations[langKey], k)) return;
+          const clean = w17CleanEditValue(langEdits[k]);
+          if (clean !== null) translations[langKey][k] = clean;
         });
-      } catch (e) {}
+      });
+    }
+
+    // Giá trị "chuẩn hóa" của một chuỗi dịch sau khi render (để biết một nội dung có thật sự bị chỉnh sửa hay không)
+    function w17Canon(val) {
+      const probe = document.createElement('div');
+      renderSafeI18nHTML(probe, val);
+      w17UnwrapAutoTail(probe);
+      return probe.innerHTML.replace(/\s+/g, ' ').trim();
+    }
+
+    // Đọc giá trị của một node data-i18n (từ DOM sống hoặc DOM đã parse) thành chuỗi lưu được, an toàn.
+    function w17ReadNodeValue(el) {
+      const clone = el.cloneNode(true);
+      w17UnwrapAutoTail(clone);
+      if (clone.querySelector('br, span.inline-block, strong, code, kbd')) {
+        sanitizeRichFragment(clone);
+        return clone.innerHTML;
+      }
+      return clone.textContent || '';
+    }
+
+    // ---- Node không có data-i18n (thương hiệu, nhãn, bản quyền...): lưu theo { chỉ số: { from: văn bản gốc, to: văn bản mới } }.
+    // Chỉ áp lại khi văn bản hiện tại đúng bằng "from" nên không bao giờ ghi nhầm vào node khác sau khi cấu trúc trang đổi.
+    const W17_NODE_SELECTOR = 'h1, h2, h3, h4, p, span:not(.lucide):not(.no-edit), header a, footer a, .editable-node';
+    const W17_NODE_EXCLUDE = '[data-i18n], #visual-toolbar, #ga4-drilldown-modal, #dashboard, #pbi-ga4-dashboard, button, select, script, style, svg, #toast-notification, .no-edit';
+    let w17NodeIndex = [];
+
+    function w17IndexEditableNodes() {
+      w17NodeIndex = [];
+      document.querySelectorAll(W17_NODE_SELECTOR).forEach((el) => {
+        if (el.closest(W17_NODE_EXCLUDE) || el.children.length) return;
+        const text = el.textContent || '';
+        if (!text.trim()) return;
+        w17NodeIndex.push({ el, orig: text });
+      });
+    }
+
+    function w17ApplyNodeEdits(map) {
+      if (!map || typeof map !== 'object') return;
+      Object.keys(map).forEach((idx) => {
+        const entry = w17NodeIndex[Number(idx)];
+        const e = map[idx];
+        if (!entry || !e || typeof e.from !== 'string' || typeof e.to !== 'string' || e.to.length > 2000) return;
+        if (entry.orig === e.from) entry.el.textContent = e.to;
+      });
+    }
+
+    // Chuyển bản lưu snapshot innerHTML cũ của Creator sang dữ liệu có schema (một lần, không xóa bản cũ).
+    function w17MigrateLegacySnapshots() {
+      if (localStorage.getItem(W17_STORAGE_JSON_KEY) !== null) return 0;
+      const present = W17_LEGACY_SNAPSHOT_KEYS.filter((k) => {
+        const v = localStorage.getItem(k);
+        return typeof v === 'string' && v.length > 0;
+      });
+      if (!present.length) return 0;
+
+      const editsByLang = {};
+      let migrated = 0;
+      present.forEach((key) => {
+        const doc = new DOMParser().parseFromString('<!doctype html><body>' + localStorage.getItem(key), 'text/html');
+        const nodes = Array.from(doc.querySelectorAll('[data-i18n]'));
+        // Xác định ngôn ngữ lúc lưu: ngôn ngữ có nhiều node khớp bản dịch gốc nhất
+        const score = {};
+        W17_LOCALES.forEach((l) => { score[l] = 0; });
+        nodes.forEach((n) => {
+          const k = n.getAttribute('data-i18n');
+          const text = (n.textContent || '').replace(/\s+/g, ' ').trim();
+          W17_LOCALES.forEach((l) => {
+            if (!Object.prototype.hasOwnProperty.call(W17_PRISTINE[l], k)) return;
+            const probe = document.createElement('div');
+            renderSafeI18nHTML(probe, W17_PRISTINE[l][k]);
+            if ((probe.textContent || '').replace(/\s+/g, ' ').trim() === text) score[l]++;
+          });
+        });
+        const lang = W17_LOCALES.slice().sort((a, b) => score[b] - score[a])[0] || 'vi';
+        nodes.forEach((n) => {
+          const k = n.getAttribute('data-i18n');
+          if (!Object.prototype.hasOwnProperty.call(W17_PRISTINE[lang], k)) return;
+          const value = w17ReadNodeValue(n);
+          if (w17Canon(value) === w17Canon(W17_PRISTINE[lang][k])) return;
+          const clean = w17CleanEditValue(value);
+          if (clean === null) return;
+          (editsByLang[lang] = editsByLang[lang] || {})[k] = clean;
+          migrated++;
+        });
+      });
+
+      localStorage.setItem(W17_STORAGE_JSON_KEY, JSON.stringify({
+        schema: 1,
+        editsByLang,
+        migratedFrom: present,
+        migratedAt: new Date().toISOString()
+      }));
+      return migrated;
+    }
+
+    let w17MigratedCount = 0;
+
+    function loadStructuredEditsIntoTranslations() {
+      try { w17MigratedCount = w17MigrateLegacySnapshots(); } catch (e) {}
+      w17ApplyEditMap((w17ReadBakedEdits() || {}).editsByLang);
+      w17ApplyEditMap((w17ReadCachedEdits() || {}).editsByLang);
     }
 
     function filterDashboard(region) {
@@ -2246,9 +2450,7 @@
       currentLang = lang;
       document.documentElement.lang = lang;
 
-      try {
-        localStorage.setItem('portfolio_lang', lang);
-      } catch (e) {}
+      w17SetPref(W17_LANG_KEY, lang);
 
       const desktopSelect = document.getElementById('langSelect');
       const mobileSelect = document.getElementById('langSelectMobile');
@@ -2299,10 +2501,10 @@
       const isDark = document.documentElement.classList.contains('dark');
       if (isDark) {
         document.documentElement.classList.remove('dark');
-        try { localStorage.setItem('portfolio_theme', 'light'); } catch (e) {}
+        w17SetPref(W17_THEME_KEY, 'light');
       } else {
         document.documentElement.classList.add('dark');
-        try { localStorage.setItem('portfolio_theme', 'dark'); } catch (e) {}
+        w17SetPref(W17_THEME_KEY, 'dark');
       }
       updateThemeIcons();
     }
@@ -2912,7 +3114,38 @@
       ).filter((el) => !el.closest('.hidden') && el.offsetParent !== null);
     }
 
-    function openGA4DrilldownModal(defaultTab = 'countries', triggerEl = null) {
+    // Vùng cuộn thật sự của modal: thân modal (desktop) hoặc cả hộp thoại (mobile / viewport thấp).
+    function getGA4ModalScroller() {
+      const body = document.getElementById('ga4-modal-body');
+      const dialog = document.getElementById('ga4-modal-dialog');
+      if (body && getComputedStyle(body).overflowY !== 'visible' && body.scrollHeight > body.clientHeight + 1) return body;
+      return dialog || body;
+    }
+
+    // Đưa nhóm dịch vụ tương ứng vào vùng nhìn thấy trong vùng cuộn của modal (không cuộn trang nền).
+    function revealGA4ServicePackage(serviceId) {
+      document.querySelectorAll('[data-service-pkg]').forEach((el) => {
+        el.classList.remove('ring-2', 'ring-emerald-400');
+        el.removeAttribute('aria-current');
+      });
+      const modalBody = document.getElementById('ga4-modal-body');
+      const dialog = document.getElementById('ga4-modal-dialog');
+      [modalBody, dialog].forEach((c) => { if (c) c.scrollTop = 0; });
+      if (!serviceId) return;
+      const target = document.getElementById('modal-pkg-' + serviceId);
+      if (!target) return;
+      target.classList.add('ring-2', 'ring-emerald-400');
+      target.setAttribute('aria-current', 'true');
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      requestAnimationFrame(() => {
+        const scroller = getGA4ModalScroller();
+        if (!scroller) return;
+        const delta = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+        scroller.scrollTo({ top: Math.max(0, scroller.scrollTop + delta - 12), behavior: reduce ? 'auto' : 'smooth' });
+      });
+    }
+
+    function openGA4DrilldownModal(defaultTab = 'countries', triggerEl = null, serviceId = null) {
       const modal = document.getElementById('ga4-drilldown-modal');
       if (!modal) return;
       lastGA4ModalTrigger = triggerEl || document.activeElement;
@@ -2922,9 +3155,10 @@
       renderPowerBIMatrices(currentPBIFilter);
       switchGA4ModalTab(defaultTab);
       if (window.lucide) lucide.createIcons();
+      revealGA4ServicePackage(serviceId);
       setTimeout(() => {
         const closeBtn = document.getElementById('ga4-modal-close-btn');
-        if (closeBtn) closeBtn.focus();
+        if (closeBtn) closeBtn.focus({ preventScroll: true });
       }, 20);
     }
 
@@ -2994,10 +3228,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      let savedTheme = 'dark';
-      try {
-        savedTheme = localStorage.getItem('portfolio_theme') || 'dark';
-      } catch (e) {}
+      const savedTheme = w17GetPref(W17_THEME_KEY, 'dark', ['dark', 'light']);
 
       if (savedTheme === 'dark') {
         document.documentElement.classList.add('dark');
@@ -3010,10 +3241,7 @@
       loadStructuredEditsIntoTranslations();
 
       // 2. Áp dụng ngôn ngữ đã lưu để F5 không bao giờ hiển thị sai ngôn ngữ
-      let savedLang = 'vi';
-      try {
-        savedLang = localStorage.getItem('portfolio_lang') || 'vi';
-      } catch (e) {}
+      const savedLang = w17GetPref(W17_LANG_KEY, 'vi', W17_LOCALES);
       switchLanguage(savedLang, false);
 
       renderPowerBIMatrices('all');
@@ -3031,44 +3259,84 @@
   <script id="visual-editor-script">
     let isVisualEditing = false;
 
+    // Lưu chỉnh sửa theo schema: chỉ ghi những khóa i18n thật sự khác bản dịch gốc, theo ngôn ngữ đang hiển thị.
     function persistStructuredEdits() {
       try {
-        const raw = localStorage.getItem(W17_STORAGE_JSON_KEY);
-        const state = raw ? JSON.parse(raw) : { editsByLang: {} };
-        if (!state.editsByLang || typeof state.editsByLang !== 'object') {
-          state.editsByLang = {};
-        }
+        const state = w17ReadCachedEdits() || {};
+        if (!state.editsByLang || typeof state.editsByLang !== 'object') state.editsByLang = {};
+        state.schema = 1;
         const activeLang = currentLang || 'vi';
-        if (!state.editsByLang[activeLang]) {
+        if (!state.editsByLang[activeLang] || typeof state.editsByLang[activeLang] !== 'object') {
           state.editsByLang[activeLang] = {};
         }
         document.querySelectorAll('[data-i18n][contenteditable="true"]').forEach((el) => {
           const key = el.getAttribute('data-i18n');
-          if (key) {
-            let savedVal = '';
-            if (el.querySelector('br, span.inline-block, strong, code, kbd')) {
-              const clone = el.cloneNode(true);
-              sanitizeRichFragment(clone);
-              savedVal = clone.innerHTML;
-            } else {
-              savedVal = el.textContent || '';
-            }
+          if (!key || !Object.prototype.hasOwnProperty.call(W17_PRISTINE[activeLang] || {}, key)) return;
+          const savedVal = w17CleanEditValue(w17ReadNodeValue(el));
+          if (savedVal === null) return;
+          if (w17Canon(savedVal) === w17Canon(W17_PRISTINE[activeLang][key])) {
+            delete state.editsByLang[activeLang][key];
+            translations[activeLang][key] = W17_PRISTINE[activeLang][key];
+          } else {
             state.editsByLang[activeLang][key] = savedVal;
-            if (translations[activeLang]) {
-              translations[activeLang][key] = savedVal;
-            }
+            translations[activeLang][key] = savedVal;
           }
+        });
+        state.nodeEdits = (state.nodeEdits && typeof state.nodeEdits === 'object') ? state.nodeEdits : {};
+        w17NodeIndex.forEach((entry, idx) => {
+          const now = entry.el.textContent || '';
+          if (now !== entry.orig) state.nodeEdits[idx] = { from: entry.orig, to: now };
+          else delete state.nodeEdits[idx];
         });
         localStorage.setItem(W17_STORAGE_JSON_KEY, JSON.stringify(state));
       } catch (e) {}
     }
 
+    function w17SyncChromeOffset() {
+      const toolbar = document.getElementById('visual-toolbar');
+      const navbar = document.getElementById('main-navbar');
+      if (!navbar) return;
+      if (toolbar && !toolbar.classList.contains('hidden')) {
+        navbar.style.top = toolbar.offsetHeight + 'px';
+      } else {
+        navbar.style.removeProperty('top');
+      }
+    }
+
+    function w17ShowEditorChrome() {
+      const toolbar = ensureVisualToolbar();
+      if (!toolbar) return null;
+      toolbar.classList.remove('hidden');
+      w17SyncChromeOffset();
+      return toolbar;
+    }
+
+    function w17HideEditorChrome() {
+      const toolbar = document.getElementById('visual-toolbar');
+      if (toolbar) toolbar.classList.add('hidden');
+      w17SyncChromeOffset();
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
+      // Lập chỉ mục các node không có data-i18n trên DOM tĩnh rồi áp lại chỉnh sửa đã lưu
+      w17IndexEditableNodes();
+      w17ApplyNodeEdits((w17ReadCachedEdits() || {}).nodeEdits);
+
       document.body.addEventListener('input', () => {
         if (isVisualEditing) {
           persistStructuredEdits();
         }
       });
+
+      window.addEventListener('resize', w17SyncChromeOffset);
+
+      // Chế độ Creator: thanh công cụ hiện sẵn (bản Final không bật cho tới khi bấm Alt + E)
+      if (W17_IS_CREATOR) {
+        w17ShowEditorChrome();
+        if (w17MigratedCount > 0) {
+          showEditorToast('♻️ Đã chuyển ' + w17MigratedCount + ' chỉnh sửa từ bản lưu cũ sang dữ liệu có cấu trúc (bản cũ vẫn được giữ nguyên).', 7000);
+        }
+      }
 
       // Khi đang ở chế độ Bật sửa chữ, chặn hành vi nhảy trang khi click vào các thẻ <a>
       document.addEventListener('click', (e) => {
@@ -3084,15 +3352,10 @@
         if (e.altKey && (e.key === 'e' || e.key === 'E' || e.code === 'KeyE')) {
           e.preventDefault();
           const toolbar = ensureVisualToolbar();
-          const navbar = document.getElementById('main-navbar');
           if (!toolbar) return;
 
           if (toolbar.classList.contains('hidden')) {
-            toolbar.classList.remove('hidden');
-            if (navbar) {
-              navbar.classList.remove('top-0');
-              navbar.classList.add('top-[45px]');
-            }
+            w17ShowEditorChrome();
             if (!isVisualEditing) {
               toggleEditMode();
             }
@@ -3102,11 +3365,7 @@
               toggleEditMode();
             } else {
               toggleEditMode();
-              toolbar.classList.add('hidden');
-              if (navbar) {
-                navbar.classList.remove('top-[45px]');
-                navbar.classList.add('top-0');
-              }
+              w17HideEditorChrome();
               showEditorToast('🔒 Đã ẩn thanh công cụ (Bấm Alt + E để mở lại bất cứ lúc nào)!');
             }
           }
@@ -3122,25 +3381,26 @@
       toolbar.className = 'hidden sticky top-0 z-[60] w-full bg-slate-900/95 border-b border-emerald-500/30 backdrop-blur-md px-4 py-2 text-slate-100 shadow-lg no-print';
       toolbar.innerHTML = `
         <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2 text-xs sm:text-sm font-bold">
-            <span class="no-edit w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div class="flex items-center gap-2 text-xs sm:text-sm font-bold min-w-0">
+            <span class="no-edit w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
             <span class="brand-title editable-node">Portfolio Showcase (V3)</span>
             <span class="brand-title editable-node hidden md:inline text-xs font-normal text-slate-400">— Chỉnh sửa trực tiếp &amp; Xuất bản HTML sạch (Phím tắt: <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-400 font-mono text-[11px]">Alt + E</kbd>)</span>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <button type="button" id="btn-toggle-edit" onclick="toggleVisualEdit()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-sm transition-all cursor-pointer">
+            <button type="button" id="btn-toggle-edit" onclick="toggleVisualEdit()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 text-slate-950 shadow-sm transition-all cursor-pointer">
               <span>✏️</span><span id="btn-edit-text">Bật sửa chữ</span>
             </button>
-            <button type="button" onclick="saveCleanFinalHTML()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-sm transition-all cursor-pointer">
+            <button type="button" id="btn-save-final" onclick="saveCleanFinalHTML()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 shadow-sm transition-all cursor-pointer">
               <span>💾</span><span>Lưu file sạch (Final)</span>
             </button>
-            <button type="button" onclick="resetVisualChanges()" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all cursor-pointer">
+            <button type="button" onclick="resetVisualChanges()" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 text-slate-300 border border-slate-700 transition-all cursor-pointer">
               <span>↺</span><span>Khôi phục</span>
             </button>
           </div>
         </div>
       `;
       document.body.insertBefore(toolbar, document.body.firstChild);
+      if ('ResizeObserver' in window) new ResizeObserver(w17SyncChromeOffset).observe(toolbar);
       return toolbar;
     }
 
@@ -3187,10 +3447,41 @@
       toggleEditMode();
     }
 
-    function saveCleanFinalHTML() {
+    // Gom chỉnh sửa (đã nhúng sẵn + cache hiện tại) để nhúng vào file Final: mở lại bằng cache TRỐNG vẫn không mất nội dung.
+    function w17CollectEditsForBake() {
+      const merged = {};
+      [w17ReadBakedEdits(), w17ReadCachedEdits()].forEach((src) => {
+        if (!src || !src.editsByLang || typeof src.editsByLang !== 'object') return;
+        Object.keys(src.editsByLang).forEach((l) => {
+          if (!Object.prototype.hasOwnProperty.call(translations, l)) return;
+          const langEdits = src.editsByLang[l];
+          if (!langEdits || typeof langEdits !== 'object') return;
+          Object.keys(langEdits).forEach((k) => {
+            if (!Object.prototype.hasOwnProperty.call(translations[l], k)) return;
+            const clean = w17CleanEditValue(langEdits[k]);
+            if (clean === null) return;
+            (merged[l] = merged[l] || {})[k] = clean;
+          });
+        });
+      });
+      return { schema: 1, editsByLang: merged };
+    }
+
+    function w17JsonForScriptTag(obj) {
+      return JSON.stringify(obj)
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026')
+        .replace(new RegExp(String.fromCharCode(0x2028), 'g'), '\\u2028')
+        .replace(new RegExp(String.fromCharCode(0x2029), 'g'), '\\u2029');
+    }
+
+    // Dựng HTML Final sạch: không toolbar, không contenteditable/spellcheck, không cờ Creator, link về Final.
+    function w17BuildCleanHtml() {
       persistStructuredEdits();
 
       const cloneDoc = document.documentElement.cloneNode(true);
+      cloneDoc.removeAttribute('data-w17-mode');
       const cloneBody = cloneDoc.querySelector('body');
       if (cloneBody) {
         cloneBody.classList.remove('is-editing');
@@ -3198,6 +3489,8 @@
 
       const cloneNavbar = cloneDoc.querySelector('#main-navbar');
       if (cloneNavbar) {
+        cloneNavbar.style.removeProperty('top');
+        if (!cloneNavbar.getAttribute('style')) cloneNavbar.removeAttribute('style');
         cloneNavbar.classList.remove('top-[45px]');
         cloneNavbar.classList.add('top-0');
       }
@@ -3206,6 +3499,7 @@
 
       const cloneToast = cloneDoc.querySelector('#toast-notification');
       if (cloneToast) {
+        cloneToast.textContent = '';
         cloneToast.classList.add('hidden');
       }
 
@@ -3216,68 +3510,85 @@
       cloneDoc.querySelectorAll('[contenteditable]').forEach((el) => el.removeAttribute('contenteditable'));
       cloneDoc.querySelectorAll('[spellcheck]').forEach((el) => el.removeAttribute('spellcheck'));
 
-      const finalHTML = '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
-      const payload = JSON.stringify({
-        filename: 'index.html',
-        file: 'index.html',
-        targets: ['index.html'],
-        html: finalHTML,
-        content: finalHTML
-      });
+      const bakedEl = cloneDoc.querySelector('#w17-baked-edits');
+      if (bakedEl) bakedEl.textContent = w17JsonForScriptTag(w17CollectEditsForBake());
 
-      // Luôn kích hoạt tải file về máy
-      const blob = new Blob([finalHTML], { type: 'text/html;charset=utf-8' });
+      return '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
+    }
+
+    // Gọi máy chủ lưu file (dev_server.py): lấy token cùng origin rồi POST. Trả trạng thái thật, không đoán.
+    async function w17SaveToServer(filename, html) {
+      if (!/^https?:$/.test(location.protocol)) return { ok: false, reason: 'static' };
+      let token = '';
+      try {
+        const s = await fetch('/api/session', { cache: 'no-store', credentials: 'same-origin' });
+        if (!s.ok) return { ok: false, reason: 'no-api', status: s.status };
+        token = (await s.json()).token || '';
+      } catch (e) {
+        return { ok: false, reason: 'unreachable' };
+      }
+      try {
+        const r = await fetch('/api/save', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-W17-Token': token },
+          body: JSON.stringify({ filename, targets: [filename], html })
+        });
+        let body = null;
+        try { body = await r.json(); } catch (e) {}
+        if (r.ok && body && Array.isArray(body.saved) && body.saved.includes(filename)) {
+          return { ok: true, body };
+        }
+        return { ok: false, reason: 'rejected', status: r.status, message: body && body.message };
+      } catch (e) {
+        return { ok: false, reason: 'unreachable' };
+      }
+    }
+
+    function w17DownloadHtml(filename, html) {
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'index.html';
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showEditorToast('💾 Đã tải "index.html" sạch về máy! Đang kết nối máy chủ để ghi đè...');
+    }
 
-      const saveEndpoints = window.location.protocol.startsWith('http')
-        ? ['/api/save']
-        : ['http://127.0.0.1:8000/api/save', 'http://localhost:8000/api/save'];
-
-      let saveAttempted = 0;
-      let saveSucceeded = false;
-
-      saveEndpoints.forEach((endpoint) => {
-        fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: payload
-        })
-          .then((res) => {
-            saveAttempted++;
-            if (res && res.ok) {
-              saveSucceeded = true;
-              showEditorToast('✅ Đã ghi đè trực tiếp vào file gốc trong Git thành công!');
-            } else if (saveAttempted === saveEndpoints.length && !saveSucceeded) {
-              showEditorToast('ℹ️ Tải file thành công. Máy chủ không hỗ trợ /api/save (chế độ tĩnh), hãy dùng file vừa tải.');
-            }
-          })
-          .catch(() => {
-            saveAttempted++;
-            if (saveAttempted === saveEndpoints.length && !saveSucceeded) {
-              showEditorToast('ℹ️ Tải file thành công. Không có máy chủ cục bộ /api/save (chế độ tĩnh), hãy dùng file vừa tải.');
-            }
-          });
-      });
+    async function saveCleanFinalHTML() {
+      const btn = document.getElementById('btn-save-final');
+      if (btn) btn.disabled = true;
+      try {
+        const finalHTML = w17BuildCleanHtml();
+        w17DownloadHtml('index.html', finalHTML);
+        showEditorToast('💾 Đã tải "index.html" sạch về máy. Đang kiểm tra máy chủ lưu file...');
+        const result = await w17SaveToServer('index.html', finalHTML);
+        if (result.ok) {
+          showEditorToast('✅ Đã ghi đè index.html trong thư mục dự án (có bản sao lưu trước khi ghi).', 6000);
+        } else if (result.reason === 'rejected') {
+          showEditorToast('⚠️ Máy chủ từ chối lưu (' + result.status + '): ' + (result.message || 'không rõ lý do') + ' — file đã tải về máy vẫn dùng được.', 9000);
+        } else {
+          showEditorToast('ℹ️ Chưa ghi vào dự án: không có máy chủ /api/save. File đã tải về máy; chạy "python dev_server.py" rồi mở trang qua http://localhost:8000 để ghi trực tiếp.', 9000);
+        }
+        return result;
+      } finally {
+        if (btn) btn.disabled = false;
+      }
     }
 
     function resetVisualChanges() {
       if (confirm('Khôi phục toàn bộ nội dung trang về mặc định ban đầu?')) {
         try {
-          localStorage.removeItem(W17_STORAGE_JSON_KEY);
+          // Ghi trạng thái rỗng thay vì xóa key: tránh việc bản lưu cũ bị chuyển đổi lại sau khi khôi phục.
+          localStorage.setItem(W17_STORAGE_JSON_KEY, JSON.stringify({ schema: 1, editsByLang: {}, resetAt: new Date().toISOString() }));
         } catch (e) {}
         window.location.reload();
       }
     }
 
-    function showEditorToast(msg) {
+    function showEditorToast(msg, ms = 3200) {
       const toast = document.getElementById('toast-notification');
       if (!toast) return;
       toast.textContent = msg;
@@ -3285,7 +3596,7 @@
       clearTimeout(window.__w17ToastTimer);
       window.__w17ToastTimer = setTimeout(() => {
         toast.classList.add('hidden');
-      }, 3200);
+      }, ms);
     }
   </script>
 </body>
